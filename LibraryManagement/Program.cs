@@ -1,14 +1,30 @@
 using LibraryManagement.Api.Data;
 using LibraryManagement.Api.Middleware;
 using LibraryManagement.Api.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState.Values
+                .SelectMany(value => value.Errors)
+                .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                    ? "Invalid request body."
+                    : error.ErrorMessage);
+
+            return new BadRequestObjectResult(new
+            {
+                error = string.Join(" ", errors)
+            });
+        };
+    });
+builder.Services.AddMemoryCache();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

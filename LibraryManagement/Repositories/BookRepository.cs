@@ -13,6 +13,37 @@ public class BookRepository : IBookRepository
         _context = context;
     }
 
+    /// <summary>
+    /// Atomically decrements AvailableCopies if > 0. Prevents race conditions
+    /// where multiple requests could borrow the last copy simultaneously.
+    /// </summary>
+    public async Task<bool> TryDecrementAvailableCopiesAsync(Guid bookId)
+    {
+        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+        if (book is null || book.AvailableCopies <= 0)
+            return false;
+
+        book.AvailableCopies--;
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    /// <summary>
+    /// Atomically increments AvailableCopies when a book is returned.
+    /// </summary>
+    public async Task<bool> IncrementAvailableCopiesAsync(Guid bookId)
+    {
+        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
+        if (book is null)
+            return false;
+
+        if (book.AvailableCopies < book.TotalCopies)
+            book.AvailableCopies++;
+        
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<IEnumerable<Book>> GetAllAsync()
     {
         return await _context.Books.ToListAsync();

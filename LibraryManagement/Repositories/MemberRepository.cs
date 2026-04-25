@@ -23,6 +23,11 @@ public class MemberRepository : IMemberRepository
         return await _context.Members.FirstOrDefaultAsync(m => m.Id == id);
     }
 
+    public async Task<Member?> GetByEmailAsync(string email)
+    {
+        return await _context.Members.FirstOrDefaultAsync(m => m.Email == email);
+    }
+
     public async Task<Member> AddAsync(Member member)
     {
         _context.Members.Add(member);

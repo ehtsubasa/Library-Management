@@ -8,5 +8,5 @@ public interface IBookService
     Task<BookResponse?> GetBookByIdAsync(Guid id);
     Task<BookResponse> CreateBookAsync(CreateBookRequest request);
     Task<BookResponse?> UpdateBookAsync(Guid id, UpdateBookRequest request);
-    Task DeleteBookAsync(Guid id);
+    Task<bool> DeleteBookAsync(Guid id);
 }

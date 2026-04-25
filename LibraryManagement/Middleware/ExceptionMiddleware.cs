@@ -26,6 +26,11 @@ public class ExceptionMiddleware
             _logger.LogWarning(ex, "A conflict occurred.");
             await WriteErrorResponse(context, HttpStatusCode.Conflict, ex.Message);
         }
+        catch (NotFoundException ex)
+        {
+            _logger.LogWarning(ex, "A resource was not found.");
+            await WriteErrorResponse(context, HttpStatusCode.NotFound, ex.Message);
+        }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "A business rule violation occurred.");

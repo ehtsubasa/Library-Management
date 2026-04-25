@@ -1,4 +1,5 @@
 using LibraryManagement.Api.Dtos;
+using LibraryManagement.Api.Exceptions;
 using LibraryManagement.Api.Models;
 using LibraryManagement.Api.Repositories;
 
@@ -42,6 +43,9 @@ public class MemberService : IMemberService
 
     public async Task<MemberResponse> CreateMemberAsync(CreateMemberRequest request)
     {
+        if (await _memberRepository.ExistsByEmailAsync(request.Email))
+            throw new ConflictException($"Member with email {request.Email} already exists.");
+
         var member = new Member
         {
             Id = Guid.NewGuid(),
@@ -65,6 +69,10 @@ public class MemberService : IMemberService
         var member = await _memberRepository.GetByIdAsync(id);
         if (member is null)
             return null;
+
+        var existingMemberWithEmail = await _memberRepository.GetByEmailAsync(request.Email);
+        if (existingMemberWithEmail is not null && existingMemberWithEmail.Id != id)
+            throw new ConflictException($"Member with email {request.Email} already exists.");
 
         member.FullName = request.FullName;
         member.Email = request.Email;
