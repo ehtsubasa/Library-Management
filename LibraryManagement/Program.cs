@@ -25,6 +25,8 @@ builder.Services.AddControllers()
         };
     });
 builder.Services.AddMemoryCache();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -52,6 +54,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapScalarApiReference(options =>
     {
         options.WithOpenApiRoutePattern("/swagger/v1/swagger.json");

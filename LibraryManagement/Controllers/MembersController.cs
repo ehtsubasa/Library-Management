@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using LibraryManagement.Api.Dtos;
 using LibraryManagement.Api.Services;
+using System.Net.Mail;
 
 namespace LibraryManagement.Api.Controllers;
 
@@ -9,6 +10,20 @@ namespace LibraryManagement.Api.Controllers;
 public class MembersController : ControllerBase
 {
     private readonly IMemberService _memberService;
+
+    // Helper method to validate email format
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new MailAddress(email);
+            return addr.Address == email.Trim();
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     public MembersController(IMemberService memberService)
     {
@@ -38,7 +53,7 @@ public class MembersController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.FullName))
             return BadRequest(new { error = "FullName is required." });
 
-        if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
+        if (string.IsNullOrWhiteSpace(request.Email) || ! !IsValidEmail(request.Email))
             return BadRequest(new { error = "A valid Email is required." });
 
         var created = await _memberService.CreateMemberAsync(request);
@@ -51,7 +66,7 @@ public class MembersController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.FullName))
             return BadRequest(new { error = "FullName is required." });
 
-        if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains("@"))
+        if (string.IsNullOrWhiteSpace(request.Email) || ! !IsValidEmail(request.Email))
             return BadRequest(new { error = "A valid Email is required." });
 
         var updated = await _memberService.UpdateMemberAsync(id, request);

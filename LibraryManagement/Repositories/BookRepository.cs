@@ -16,32 +16,30 @@ public class BookRepository : IBookRepository
     /// <summary>
     /// Atomically decrements AvailableCopies if > 0. Prevents race conditions
     /// where multiple requests could borrow the last copy simultaneously.
+    /// Uses SQL UPDATE with WHERE to ensure atomicity.
     /// </summary>
     public async Task<bool> TryDecrementAvailableCopiesAsync(Guid bookId)
     {
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
-        if (book is null || book.AvailableCopies <= 0)
-            return false;
+        // Use raw SQL for atomic update: only decrement if AvailableCopies > 0
+        var affectedRows = await _context.Database.ExecuteSqlRawAsync(
+            "UPDATE Books SET AvailableCopies = AvailableCopies - 1 WHERE Id = {0} AND AvailableCopies > 0",
+            bookId);
 
-        book.AvailableCopies--;
-        await _context.SaveChangesAsync();
-        return true;
+        return affectedRows > 0; // Returns true if update succeeded (book was available)
     }
 
     /// <summary>
     /// Atomically increments AvailableCopies when a book is returned.
+    /// Ensures AvailableCopies never exceeds TotalCopies.
     /// </summary>
     public async Task<bool> IncrementAvailableCopiesAsync(Guid bookId)
     {
-        var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == bookId);
-        if (book is null)
-            return false;
+        // Use raw SQL for atomic update: only increment if AvailableCopies < TotalCopies
+        var affectedRows = await _context.Database.ExecuteSqlRawAsync(
+            "UPDATE Books SET AvailableCopies = AvailableCopies + 1 WHERE Id = {0} AND AvailableCopies < TotalCopies",
+            bookId);
 
-        if (book.AvailableCopies < book.TotalCopies)
-            book.AvailableCopies++;
-        
-        await _context.SaveChangesAsync();
-        return true;
+        return affectedRows > 0; // Returns true if update succeeded
     }
 
     public async Task<IEnumerable<Book>> GetAllAsync()

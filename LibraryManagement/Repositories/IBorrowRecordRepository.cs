@@ -1,4 +1,5 @@
 using LibraryManagement.Api.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LibraryManagement.Api.Repositories;
 
@@ -10,4 +11,5 @@ public interface IBorrowRecordRepository
     Task<BorrowRecord> AddAsync(BorrowRecord record);
     Task<BorrowRecord> UpdateAsync(BorrowRecord record);
     Task<bool> HasActiveBorrowAsync(Guid memberId, Guid bookId);
+    Task<IDbContextTransaction> BeginTransactionAsync();
 }

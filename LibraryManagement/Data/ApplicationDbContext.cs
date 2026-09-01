@@ -39,7 +39,7 @@ namespace LibraryManagement.Api.Data
                 {
                     table.HasCheckConstraint("CK_BorrowRecords_Status", "Status IN ('Borrowed', 'Returned')");
                     table.HasCheckConstraint("CK_BorrowRecords_ReturnDate", "ReturnDate IS NULL OR ReturnDate >= BorrowDate");
-                    table.HasCheckConstraint("CK_BorrowRecords_BorrowDate", "BorrowDate <= CURRENT_TIMESTAMP");
+                    //table.HasCheckConstraint("CK_BorrowRecords_BorrowDate", "BorrowDate <= CURRENT_TIMESTAMP");
                 });
             });
         }

@@ -1,4 +1,5 @@
 using LibraryManagement.Api.Dtos;
+using LibraryManagement.Api.Exceptions;
 using LibraryManagement.Api.Models;
 using LibraryManagement.Api.Repositories;
 using Microsoft.Extensions.Caching.Memory;
@@ -63,6 +64,9 @@ public class BookService : IBookService
 
     public async Task<BookResponse> CreateBookAsync(CreateBookRequest request)
     {
+        if (await _bookRepository.ExistsByIsbnAsync(request.ISBN))
+            throw new ConflictException($"A book with ISBN '{request.ISBN}' already exists.");
+
         var book = new Book
         {
             Id = Guid.NewGuid(),
@@ -75,7 +79,7 @@ public class BookService : IBookService
 
         var created = await _bookRepository.AddAsync(book);
         _cache.Remove("books_all");
-        
+
         return new BookResponse
         {
             Id = created.Id,
@@ -96,6 +100,9 @@ public class BookService : IBookService
         if (request.AvailableCopies > request.TotalCopies)
             throw new InvalidOperationException("AvailableCopies cannot exceed TotalCopies.");
 
+        if (book.ISBN != request.ISBN && await _bookRepository.ExistsByIsbnAsync(request.ISBN))
+            throw new ConflictException($"A book with ISBN '{request.ISBN}' already exists.");
+
         book.Title = request.Title;
         book.Author = request.Author;
         book.ISBN = request.ISBN;
@@ -103,6 +110,11 @@ public class BookService : IBookService
         book.AvailableCopies = request.AvailableCopies;
 
         var updated = await _bookRepository.UpdateAsync(book);
+
+        // Invalidate both the list cache and the individual book cache
+        _cache.Remove("books_all");
+        _cache.Remove($"book_{id}");
+
         return new BookResponse
         {
             Id = updated.Id,
@@ -121,6 +133,11 @@ public class BookService : IBookService
             return false;
 
         await _bookRepository.DeleteAsync(book);
+
+        // Invalidate both the list cache and the individual book cache
+        _cache.Remove("books_all");
+        _cache.Remove($"book_{id}");
+
         return true;
     }
 }

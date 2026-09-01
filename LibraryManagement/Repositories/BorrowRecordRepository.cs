@@ -1,6 +1,7 @@
 using LibraryManagement.Api.Data;
 using LibraryManagement.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace LibraryManagement.Api.Repositories;
 
@@ -57,5 +58,10 @@ public class BorrowRecordRepository : IBorrowRecordRepository
             br.MemberId == memberId &&
             br.BookId == bookId &&
             br.Status == "Borrowed");
+    }
+
+    public async Task<IDbContextTransaction> BeginTransactionAsync()
+    {
+        return await _context.Database.BeginTransactionAsync();
     }
 }
