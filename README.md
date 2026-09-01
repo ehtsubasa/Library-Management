@@ -16,9 +16,13 @@ ASP.NET Core (.NET 10) · EF Core 8 · SQLite · IMemoryCache · Swagger/Scalar
 
 ## Architecture
 Client → ExceptionMiddleware → Controller → Service → Repository → Database
+
 Controllers — validate input, delegate to services
+
 Services — business rules (availability checks, duplicate detection, conflicts)
+
 Repositories — all DB access via EF Core
+
 Concurrency Handling:
   Two people trying to borrow the last copy of a book at the same time is a classic race condition. This is solved with a single atomic SQL statement instead of a read-then-write:
   sql:
