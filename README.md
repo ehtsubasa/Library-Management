@@ -29,9 +29,13 @@ Only one concurrent request can succeed; the other gets 0 affected rows and retu
 
 ## API Overview
 Key Endpoints:
+
 Books:	/api/books	GET, GET/{id}, POST, PUT/{id}, DELETE/{id}
+
 Members:	/api/members	GET, GET/{id}, POST, PUT/{id}, DELETE/{id}
+
 Borrowing:	/api/borrowing	GET, GET/{id}, GET/history/{memberId}, POST/borrow, POST/return/{id}
+
 Full request/response schemas available via Swagger/Scalar at runtime (/scalar/v1).
 Notable business rules: 
 - ISBNs and member emails must be unique ·
